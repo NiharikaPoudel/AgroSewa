@@ -1,0 +1,46 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 40px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2f7d32;
+  text-decoration: none;
+}
+
+/* Normal button style for Sign Up */
+.nav-right .nav-btn {
+  background-color: #2f7d32;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+/* Style for Become an Expert link */
+.nav-right .nav-link {
+  color: #2f7d32;
+  text-decoration: none;
+  font-weight: 500;
+  margin-right: 20px;
+}
+
+.nav-right .nav-link:hover {
+  text-decoration: underline;
+}
+
+/* Language selector dropdown */
+.language-select {
+  margin-right: 10px;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}

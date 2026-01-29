@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import userModel from '../models/userModel.js';
+import userModel from '../models/usermodel.js';
 import transporter from '../config/nodemailer.js'
 
 // REGISTER
@@ -77,7 +77,7 @@ export const login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user._id },
+            { id: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
@@ -89,7 +89,15 @@ export const login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        return res.json({ success: true });
+        return res.json({ success: true,
+            user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        isAccountVerified: user.isAccountVerified,
+      },
+         });
 
     } catch (error) {
         return res.json({ success: false, message: error.message });
@@ -226,7 +234,7 @@ export const sendResetOtp = async (req, res) => {
 };
 
 
-// RESET PASSWORD
+// Code for Password Reset
 export const resetPassword = async (req, res) => {
     const { email, otp, newPassword } = req.body;
 
@@ -239,7 +247,7 @@ export const resetPassword = async (req, res) => {
             return res.json({ success: false, message: 'User not found' });
         }
 
-        // Fixed OTP comparison
+        // Code for Fixing OTP comparison
         if (!user.resetOtp || user.resetOtp.trim() !== String(otp).trim()) {
             return res.json({ success: false, message: 'Invalid OTP' });
         }

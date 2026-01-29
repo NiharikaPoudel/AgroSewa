@@ -1,0 +1,91 @@
+{
+  "login": "Login",
+  "emailPlaceholder": "Enter your email",
+  "password": "Password",
+  "loginGoogle": "Login with Google",
+  "signupGoogle": "Sign up with Google",
+  "forgotPassword": "Forgot password?",
+  "noAccount": "Don't have an account?",
+  "register": "Register",
+  "loginFailed": "Login failed. Please try again.",
+  "googleLoginError": "Google login failed. Try again.",
+
+  "createAccount": "Create Account",
+  "fullName": "Your full name",
+  "alreadyHaveAccount": "Already have an account?",
+
+  "verifyEmail": "Verify Email",
+  "enterOtp": "Enter OTP",
+  "verify": "Verify",
+
+  "resetPassword": "Reset Password",
+  "sendOtp": "Send OTP",
+  "newPassword": "New Password",
+
+  "welcome": "Welcome to AgroSewa",
+  "description": "Smart agriculture solutions powered by technology.",
+  "getStarted": "Get Started",
+
+  "becomeExpert": "Become an Expert",
+  "signUp": "Sign Up",
+
+  "expertHeroTitle": "Grow Your Career as a Soil Testing Expert",
+  "expertHeroDesc": "Help farmers make better decisions by providing professional soil testing services. Expand your expertise, build credibility, and earn a stable income.",
+
+  "expertHowTitle": "How It Works",
+  "expertHow1": "Register as a soil testing expert by submitting your profile.",
+  "expertHow2": "Receive assignments based on your location and skills.",
+  "expertHow3": "Visit farms, collect soil samples, and perform lab tests.",
+  "expertHow4": "Upload reports and communicate results with farmers.",
+  "expertHow5": "Earn income and grow your professional reputation.",
+
+  "expertBenefitsTitle": "Benefits of Becoming an Expert",
+  "expertBenefit1": "Regular assignments to keep you engaged and earning.",
+  "expertBenefit2": "Stable income while helping farmers succeed.",
+  "expertBenefit3": "Safety and quality support from the platform.",
+  "expertBenefit4": "Access to training on soil testing and analytics.",
+  "expertBenefit5": "Network with other experts for collaboration.",
+  "expertBenefit6": "Long-term growth: become verified, lead a team, or start your own service.",
+
+  "expertWhoTitle": "Who Can Join?",
+  "expertWho1": "Service Providers: Soil labs, agricultural consultants, environmental analysts.",
+  "expertWho2": "Individual Technicians: Certified or non-certified, self-employed, or seeking opportunities.",
+  "expertWho3": "Anyone passionate about helping farmers and growing professionally.",
+
+  "expertFaqTitle": "FAQs",
+  "expertFaqQ1": "What services will I provide?",
+  "expertFaqA1": "Soil sampling, analysis, and reporting.",
+  "expertFaqQ2": "Do I need formal training?",
+  "expertFaqA2": "Training is available but not mandatory.",
+  "expertFaqQ3": "How do I get paid?",
+  "expertFaqA3": "Payments are securely transferred after assignment completion.",
+  "expertFaqQ4": "Is there a cost to join?",
+  "expertFaqA4": "Joining as an expert is completely free.",
+
+  "expertJoinNow": "Join Now",
+
+  "passwordValidation": {
+    "minLength": "Password must be at least 8 characters.",
+    "uppercase": "Password must contain at least one uppercase letter.",
+    "lowercase": "Password must contain at least one lowercase letter.",
+    "number": "Password must contain at least one number.",
+    "specialChar": "Password must contain at least one special character.",
+    "required": "Password is required."
+  },
+
+  "googleValidation": {
+    "required": "Google account is required for this action.",
+    "failed": "Google authentication failed. Please try again."
+  },
+
+  "fillAllFields": "Please fill all fields.",
+  "invalidEmail": "Invalid email address.",
+  "passwordMinLength": "Password must be at least 8 characters.",
+  "passwordUpperCase": "Password must contain at least one uppercase letter.",
+  "passwordLowerCase": "Password must contain at least one lowercase letter.",
+  "passwordNumber": "Password must contain at least one number.",
+  "passwordSpecialChar": "Password must contain at least one special character.",
+  "registerFailed": "Registration failed. Please try again.",
+  "googleError": "Google signup failed. Please try again.",
+  "userAlreadyExists": "User with this email already exists."
+}

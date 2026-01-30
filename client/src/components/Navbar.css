@@ -2,45 +2,134 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 40px;
+  padding: 16px 40px;
   background-color: #ffffff;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
-  color: #2f7d32;
+  color: #2d8a4f;
   text-decoration: none;
+  letter-spacing: -0.5px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo:hover {
+  color: #267a43;
+  transform: translateY(-1px);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Normal button style for Sign Up */
 .nav-right .nav-btn {
-  background-color: #2f7d32;
+  background: linear-gradient(to bottom, #2d8a4f, #267a43);
   color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.3px;
   margin-left: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(45, 138, 79, 0.2);
+  display: inline-block;
+}
+
+.nav-right .nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(45, 138, 79, 0.3);
+}
+
+.nav-right .nav-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 
 /* Style for Become an Expert link */
 .nav-right .nav-link {
-  color: #2f7d32;
+  color: #2d8a4f;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 15px;
   margin-right: 20px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .nav-right .nav-link:hover {
-  text-decoration: underline;
+  background-color: #f0fdf4;
+  color: #267a43;
+  text-decoration: none;
+}
+
+.nav-right .nav-link:active {
+  transform: scale(0.98);
 }
 
 /* Language selector dropdown */
 .language-select {
   margin-right: 10px;
-  padding: 6px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  background-color: #fafafa;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.language-select:hover {
+  border-color: #2d8a4f;
+  background-color: #ffffff;
+}
+
+.language-select:focus {
+  border-color: #2d8a4f;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(45, 138, 79, 0.08);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 20px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .nav-right .nav-link {
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  .nav-right .nav-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .language-select {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
 }

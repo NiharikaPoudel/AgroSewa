@@ -6,28 +6,18 @@ import api from "../utils/axios";
 
 const Register = () => {
   const { t } = useTranslation();
-
-  // Form state
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
   });
-
-  // Show/hide password
   const [showPassword, setShowPassword] = useState(false);
-
-  // Dynamic error shown above all fields
   const [error, setError] = useState("");
-
   const navigate = useNavigate();
   const location = useLocation();
 
   /**
-   * -----------------------------
    * Password Validation Rules
-   * -----------------------------
-   * Returns a single error message (i18n)
    */
   const validatePassword = (password) => {
     if (!/.{8,}/.test(password)) return t("passwordMinLength");
@@ -39,9 +29,7 @@ const Register = () => {
   };
 
   /**
-   * -----------------------------
    * Handle Google Signup Redirect
-   * -----------------------------
    */
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -50,40 +38,50 @@ const Register = () => {
     const googleError = params.get("error");
 
     if (token) {
+      // Successfully authenticated with Google
       localStorage.setItem("token", token);
       localStorage.setItem("userName", name || "User");
       window.dispatchEvent(new Event("userLoggedIn"));
-      navigate("/");
+      
+      // Clear URL parameters and navigate
+      navigate("/", { replace: true });
     }
 
     if (googleError) {
-      setError(t("googleError"));
+      // Handle different error types
+      if (googleError === "google_auth_failed") {
+        setError(t("googleError") || "Google authentication failed");
+      } else if (googleError === "no_user_data") {
+        setError("Failed to retrieve user information from Google");
+      } else if (googleError === "authentication_error") {
+        setError("An error occurred during authentication");
+      } else {
+        setError(t("googleError") || "Google signup failed");
+      }
     }
   }, [location, navigate, t]);
 
   /**
-   * -----------------------------
    * Handle Form Submission
-   * -----------------------------
    */
   const submit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // 1️⃣ Check all fields are filled
+    // Check all fields are filled
     if (!form.name || !form.email || !form.password) {
       setError(t("fillAllFields"));
       return;
     }
 
-    // 2️⃣ Check email format
+    // Check email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
       setError(t("invalidEmail"));
       return;
     }
 
-    // 3️⃣ Password validation
+    // Password validation
     const passwordError = validatePassword(form.password);
     if (passwordError) {
       setError(passwordError);
@@ -103,18 +101,19 @@ const Register = () => {
           setError(res.data.message);
         }
       }
-    } catch {
-      setError(t("registerFailed"));
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError(t("registerFailed") || "Registration failed. Please try again.");
     }
   };
 
   /**
-   * -----------------------------
    * Google Signup Handler
-   * -----------------------------
    */
   const googleSignup = () => {
-    window.open("http://localhost:5000/auth/google", "_self");
+    // Use your backend URL
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+    window.location.href = `${backendUrl}/auth/google`;
   };
 
   return (
@@ -123,7 +122,7 @@ const Register = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "#f5f5f5",
+      background: "linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%)",
       padding: "20px",
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
     }}>

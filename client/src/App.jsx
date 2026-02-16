@@ -8,9 +8,12 @@ import VerifyEmail from "./pages/VerifyEmail";
 import ExpertRegistration from "./pages/ExpertRegistration"; // Expert info page
 import ExpertForm from "./pages/ExpertForm"; // Actual form page
 import "./index.css";
+import Profile from "./pages/Profile";
+import BookSoilTest from './pages/BookingPage';
 
 // Import i18n configuration
 import "./i18n";
+import BookingPage from "./pages/BookingPage";
 
 function App() {
   return (
@@ -24,7 +27,10 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/expert-registration" element={<ExpertRegistration />} />
         <Route path="/expert-form" element={<ExpertForm />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/book-service" element={<BookingPage />} />
       </Routes>
+      
     </BrowserRouter>
   );
 }

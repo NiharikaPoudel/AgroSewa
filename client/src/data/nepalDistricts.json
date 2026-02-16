@@ -1,0 +1,55 @@
+{
+  "provinces": [
+    {
+      "name": "Bagmati Province",
+      "districts": [
+        {
+          "name": "Kathmandu",
+          "municipalities": [
+            { "name": "Kathmandu Metropolitan", "wards": [1,2,3] },
+            { "name": "Kirtipur", "wards": [1,2,3] },
+            { "name": "Budanilkantha", "wards": [1,2,3] },
+            { "name": "Mahalaxmi", "wards": [1,2,3] }
+          ]
+        },
+        {
+          "name": "Lalitpur",
+          "municipalities": [
+            { "name": "Lalitpur Metropolitan", "wards": [1,2,3] },
+            { "name": "Godawari", "wards": [1,2,3] },
+            { "name": "Mahalaxmi", "wards": [1,2,3] }
+          ]
+        },
+        {
+          "name": "Bhaktapur",
+          "municipalities": [
+            { "name": "Bhaktapur Municipality", "wards": [1,2,3] },
+            { "name": "Madhyapur Thimi", "wards": [1,2,3] },
+            { "name": "Suryabinayak", "wards": [1,2,3] }
+          ]
+        },
+        {
+          "name": "Chitwan",
+          "municipalities": [
+            { "name": "Bharatpur Metropolitan", "wards": [1,2,3] },
+            { "name": "Ratnanagar", "wards": [1,2,3] },
+            { "name": "Khairahani", "wards": [1,2,3] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gandaki Province",
+      "districts": [
+        {
+          "name": "Nawalpur",
+          "municipalities": [
+            { "name": "Gaindakot", "wards": [1,2,3] },
+            { "name": "Devachuli", "wards": [1,2,3] },
+            { "name": "Bardaghat", "wards": [1,2,3] }
+          ]
+        }
+      ]
+    }
+  ]
+}

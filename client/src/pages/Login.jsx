@@ -5,66 +5,52 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import api from "../utils/axios";
 
 const Login = () => {
-  /**
-   * i18n translation hook
-   * Used to fetch translated text based on current language
-   */
   const { t } = useTranslation();
-
-  /**
-   * Form state to capture user email and password
-   */
   const [form, setForm] = useState({ email: "", password: "" });
-
-  /**
-   * Stores any login or Google authentication errors
-   */
   const [error, setError] = useState("");
-
-  /**
-   * Controls password visibility
-   */
   const [showPassword, setShowPassword] = useState(false);
-
-  /**
-   * React Router hooks
-   * navigate → programmatic navigation
-   * location → access query parameters (Google OAuth callback)
-   */
   const navigate = useNavigate();
   const location = useLocation();
 
   /**
-   * --------------------------------------------
    * Handle Google Login Redirect
-   * --------------------------------------------
    */
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-
     const token = params.get("token");
     const name = params.get("name");
     const googleError = params.get("error");
 
     if (token) {
+      // Successfully authenticated with Google
       localStorage.setItem("token", token);
       localStorage.setItem("userName", name || "User");
       window.dispatchEvent(new Event("userLoggedIn"));
-      navigate("/");
+      
+      // Clear URL parameters and navigate
+      navigate("/", { replace: true });
     }
 
     if (googleError) {
-      setError(t("googleLoginError"));
+      // Handle different error types
+      if (googleError === "google_auth_failed") {
+        setError(t("googleLoginError") || "Google authentication failed");
+      } else if (googleError === "no_user_data") {
+        setError("Failed to retrieve user information from Google");
+      } else if (googleError === "authentication_error") {
+        setError("An error occurred during authentication");
+      } else {
+        setError(t("googleLoginError") || "Google login failed");
+      }
     }
   }, [location, navigate, t]);
 
   /**
-   * --------------------------------------------
    * Normal Email & Password Login
-   * --------------------------------------------
    */
   const submit = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
       const res = await api.post("/auth/login", form);
@@ -82,18 +68,20 @@ const Login = () => {
 
       window.dispatchEvent(new Event("userLoggedIn"));
       navigate("/");
-    } catch {
-      setError(t("loginFailed"));
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(t("loginFailed") || "Login failed. Please try again.");
     }
   };
 
   /**
-   * --------------------------------------------
    * Google Login Button Handler
-   * --------------------------------------------
+   * Opens Google OAuth in the same window
    */
   const googleLogin = () => {
-    window.open("http://localhost:5000/auth/google", "_self");
+    // Use your backend URL
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+    window.location.href = `${backendUrl}/auth/google`;
   };
 
   return (
@@ -102,7 +90,7 @@ const Login = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "#f5f5f5",
+      background: "linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%)",
       padding: "20px",
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
     }}>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -9,7 +10,9 @@ const Home = () => {
     <>
       <div className="home-container">
 
-        {/* HERO SECTION */}
+        {/* ============================================
+            HERO SECTION - Original Code Preserved
+            ============================================ */}
         <section className="hero-section">
           <div className="hero-content">
             <div className="hero-badge">
@@ -25,7 +28,7 @@ const Home = () => {
             </p>
 
             <div className="hero-buttons">
-              <button className="primary-btn">
+              <button className="primary-btn" onClick={() => navigate('/book-service')}>
                 <span>{t("getStarted")}</span>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -38,12 +41,14 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Decorative Elements */}
+          {/* Decorative Elements - Original */}
           <div className="hero-decoration hero-decoration-1"></div>
           <div className="hero-decoration hero-decoration-2"></div>
         </section>
 
-        {/* FEATURES SECTION */}
+        {/* ============================================
+            FEATURES SECTION - Original Code Preserved
+            ============================================ */}
         <section className="features-section">
           <div className="section-header">
             <span className="section-label">{t("coreFeaturesLabel")}</span>
@@ -52,6 +57,7 @@ const Home = () => {
           </div>
 
           <div className="features-grid">
+            {/* Feature Card 1 - Original */}
             <div className="feature-card">
               <div className="feature-icon-wrapper">
                 <div className="feature-icon">🌱</div>
@@ -61,6 +67,7 @@ const Home = () => {
               <div className="feature-arrow">→</div>
             </div>
 
+            {/* Feature Card 2 - Most Popular (Clickable) - Original */}
             <div 
               className="feature-card feature-card-highlight"
               onClick={() => navigate('/book-service')}
@@ -75,6 +82,7 @@ const Home = () => {
               <div className="feature-arrow">→</div>
             </div>
 
+            {/* Feature Card 3 - Original */}
             <div className="feature-card">
               <div className="feature-icon-wrapper">
                 <div className="feature-icon">📊</div>
@@ -86,7 +94,9 @@ const Home = () => {
           </div>
         </section>
 
-        {/* FIELD SERVICES SECTION */}
+        {/* ============================================
+            FIELD SERVICES SECTION - Original Code Preserved
+            ============================================ */}
         <section className="field-section">
           <div className="section-header">
             <span className="section-label">{t("fieldServicesLabel")}</span>
@@ -97,6 +107,7 @@ const Home = () => {
           </div>
 
           <div className="field-grid">
+            {/* Field Service Card 1 - Original */}
             <div className="field-card">
               <div className="field-icon-wrapper">
                 <div className="field-icon">🌾</div>
@@ -110,6 +121,7 @@ const Home = () => {
               </ul>
             </div>
 
+            {/* Field Service Card 2 - Original */}
             <div className="field-card">
               <div className="field-icon-wrapper">
                 <div className="field-icon">🌱</div>
@@ -123,6 +135,7 @@ const Home = () => {
               </ul>
             </div>
 
+            {/* Field Service Card 3 - Original */}
             <div className="field-card">
               <div className="field-icon-wrapper">
                 <div className="field-icon">🚜</div>
@@ -138,7 +151,9 @@ const Home = () => {
           </div>
         </section>
 
-        {/* STATS SECTION */}
+        {/* ============================================
+            STATS SECTION - Original Code Preserved
+            ============================================ */}
         <section className="stats-section">
           <div className="stats-grid">
             <div className="stat-item">
@@ -163,12 +178,14 @@ const Home = () => {
           </div>
         </section>
 
-        {/* CTA SECTION */}
+        {/* ============================================
+            CTA SECTION - Original Code Preserved
+            ============================================ */}
         <section className="cta-section">
           <div className="cta-content">
             <h2 className="cta-title">{t("readyToImprove")}</h2>
             <p className="cta-description">{t("readyToImproveDesc")}</p>
-            <button className="cta-btn">
+            <button className="cta-btn" onClick={() => navigate('/book-service')}>
               <span>{t("getStarted")}</span>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -177,9 +194,26 @@ const Home = () => {
           </div>
         </section>
 
+        {/* ============================================
+            NEW: FLOATING CHAT BUTTON
+            ============================================ */}
+        <button 
+          className="floating-chat-btn"
+          onClick={() => navigate('/chat')}
+          aria-label="Open AI Chat"
+        >
+          <svg className="chat-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M21 11.5C21 16.75 16.75 21 11.5 21C10.39 21 9.31 20.8 8.31 20.4L3 21L4.1 16.2C3.5 15.1 3 13.8 3 12.5C3 7.25 7.25 3 12.5 3C17.75 3 22 7.25 22 12.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span className="chat-badge">{t("aiAssistant")}</span>
+        </button>
+
       </div>
 
       <style>{`
+        /* ============================================
+           ORIGINAL STYLES - ALL PRESERVED
+           ============================================ */
         * {
           margin: 0;
           padding: 0;
@@ -650,6 +684,50 @@ const Home = () => {
           transform: translateY(-1px);
         }
 
+        /* ============================================
+           NEW STYLES: FLOATING CHAT BUTTON
+           ============================================ */
+        .floating-chat-btn {
+          position: fixed;
+          bottom: 32px;
+          right: 32px;
+          width: 180px;
+          height: 60px;
+          background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+          color: white;
+          border: none;
+          border-radius: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          cursor: pointer;
+          box-shadow: 0 8px 24px rgba(22, 163, 74, 0.4);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 999;
+          font-family: inherit;
+        }
+
+        .floating-chat-btn:hover {
+          transform: translateY(-4px) scale(1.05);
+          box-shadow: 0 12px 32px rgba(22, 163, 74, 0.5);
+        }
+
+        .floating-chat-btn:active {
+          transform: translateY(-2px) scale(1.02);
+        }
+
+        .chat-icon {
+          color: white;
+          flex-shrink: 0;
+        }
+
+        .chat-badge {
+          font-size: 15px;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+        }
+
         /* ANIMATIONS */
         @keyframes fadeInDown {
           from {
@@ -696,6 +774,18 @@ const Home = () => {
 
           .section-header {
             margin-bottom: 48px;
+          }
+
+          .floating-chat-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            bottom: 24px;
+            right: 24px;
+          }
+
+          .chat-badge {
+            display: none;
           }
         }
 

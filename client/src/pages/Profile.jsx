@@ -24,12 +24,25 @@ const Profile = () => {
   const [municipalities, setMunicipalities] = useState([]);
   const [wards, setWards] = useState([]);
 
-  // Fetch user profile
+  /* ============================= */
+  /* FETCH USER PROFILE */
+  /* ============================= */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/user/profile", { withCredentials: true });
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(
+          "http://localhost:5000/api/user/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         setUser(res.data.user);
+
         setFormData({
           name: res.data.user.name || "",
           email: res.data.user.email || "",
@@ -40,26 +53,32 @@ const Profile = () => {
           municipality: res.data.user.municipality || "",
           ward: res.data.user.ward || ""
         });
+
       } catch (err) {
-        console.error(err);
+        console.error("Profile fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchProfile();
   }, []);
 
-  // Fetch locations
+  /* ============================= */
+  /* LOAD LOCATION DATA */
+  /* ============================= */
   useEffect(() => {
-    // Use the imported JSON directly
     setLocations(districtsData.provinces || []);
   }, []);
 
+  /* ============================= */
+  /* HANDLE FORM CHANGE */
+  /* ============================= */
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Dynamic dropdown handling
     if (name === "province") {
       const prov = locations.find(p => p.name === value);
       setDistricts(prov?.districts || []);
@@ -67,12 +86,14 @@ const Profile = () => {
       setWards([]);
       setFormData(prev => ({ ...prev, district: "", municipality: "", ward: "" }));
     }
+
     if (name === "district") {
       const dist = districts.find(d => d.name === value);
       setMunicipalities(dist?.municipalities || []);
       setWards([]);
       setFormData(prev => ({ ...prev, municipality: "", ward: "" }));
     }
+
     if (name === "municipality") {
       const mun = municipalities.find(m => m.name === value);
       setWards(mun?.wards || []);
@@ -80,20 +101,40 @@ const Profile = () => {
     }
   };
 
+  /* ============================= */
+  /* SAVE PROFILE */
+  /* ============================= */
   const handleSave = async () => {
     try {
       setSaving(true);
       setMessage("");
-      const res = await axios.put("http://localhost:5000/api/user/profile", formData, { withCredentials: true });
+
+      const token = localStorage.getItem("token");
+
+      const res = await axios.put(
+        "http://localhost:5000/api/user/profile",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       setUser(res.data.user);
       setMessage(t("profileUpdateSuccess"));
+
     } catch (err) {
-      console.error(err);
+      console.error("Profile update error:", err);
       setMessage(t("profileUpdateError"));
     } finally {
       setSaving(false);
     }
   };
+
+  /* ============================= */
+  /* UI */
+  /* ============================= */
 
   if (loading) return <div className="profile-loading">{t("loading")}</div>;
   if (!user) return <div className="profile-loading">{t("noUserData")}</div>;
@@ -104,82 +145,84 @@ const Profile = () => {
         <div className="profile-card">
           <div className="profile-header">
             <div className="profile-avatar">
-              {formData.picture ? <img src={formData.picture} alt="profile" /> : <span>{user.name?.charAt(0).toUpperCase()}</span>}
+              {formData.picture 
+                ? <img src={formData.picture} alt="profile" /> 
+                : <span>{user.name?.charAt(0).toUpperCase()}</span>}
             </div>
             <h2>{user.name}</h2>
             <p>{user.email}</p>
           </div>
 
           <div className="profile-form">
-            {/* Name */}
             <div className="form-group">
               <label>{t("fullName")}</label>
               <input type="text" name="name" value={formData.name} onChange={handleChange} />
             </div>
 
-            {/* Email */}
             <div className="form-group">
               <label>{t("email")}</label>
               <input type="email" name="email" value={formData.email} onChange={handleChange} />
             </div>
 
-            {/* Contact */}
             <div className="form-group">
               <label>{t("contactNumber")}</label>
               <input type="text" name="contact" value={formData.contact} onChange={handleChange} />
             </div>
 
-            {/* Profile Picture */}
             <div className="form-group">
               <label>{t("profilePicture")}</label>
               <input type="text" name="picture" value={formData.picture} onChange={handleChange} />
             </div>
 
-            {/* Province */}
             <div className="form-group">
               <label>{t("province")}</label>
               <select name="province" value={formData.province} onChange={handleChange}>
                 <option value="">{t("selectProvince")}</option>
-                {locations.map((p) => <option key={p.name} value={p.name}>{p.name}</option>)}
+                {locations.map((p) => (
+                  <option key={p.name} value={p.name}>{p.name}</option>
+                ))}
               </select>
             </div>
 
-            {/* District */}
             <div className="form-group">
               <label>{t("district")}</label>
               <select name="district" value={formData.district} onChange={handleChange} disabled={!districts.length}>
                 <option value="">{t("selectDistrict")}</option>
-                {districts.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
+                {districts.map((d) => (
+                  <option key={d.name} value={d.name}>{d.name}</option>
+                ))}
               </select>
             </div>
 
-            {/* Municipality */}
             <div className="form-group">
               <label>{t("municipality")}</label>
               <select name="municipality" value={formData.municipality} onChange={handleChange} disabled={!municipalities.length}>
                 <option value="">{t("selectMunicipality")}</option>
-                {municipalities.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
+                {municipalities.map((m) => (
+                  <option key={m.name} value={m.name}>{m.name}</option>
+                ))}
               </select>
             </div>
 
-            {/* Ward */}
             <div className="form-group">
               <label>{t("ward")}</label>
               <select name="ward" value={formData.ward} onChange={handleChange} disabled={!wards.length}>
                 <option value="">{t("selectWard")}</option>
-                {wards.map((w) => <option key={w} value={w}>{w}</option>)}
+                {wards.map((w) => (
+                  <option key={w} value={w}>{w}</option>
+                ))}
               </select>
             </div>
 
             <button className="save-btn" onClick={handleSave} disabled={saving}>
               {saving ? t("saving") : t("saveChanges")}
             </button>
+
             {message && <p className="profile-message">{message}</p>}
           </div>
         </div>
       </div>
 
-      {/* CSS */}
       <style>{`
         .profile-container { min-height:100vh; display:flex; justify-content:center; align-items:center; padding:60px 20px; background: linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);}
         .profile-card { width:100%; max-width:500px; background:white; padding:40px; border-radius:24px; box-shadow:0 20px 40px rgba(0,0,0,0.08); border:1px solid #e5e7eb;}

@@ -278,5 +278,137 @@
   "chatWelcomeSub2": "I am always ready to give you accurate information.",
   "chatDailyTip": "Today's Tip: Apply fertilizers on time to increase production.",
   "chatCommonQuestions": "Common Questions",
-  "send": "Send"
+  "send": "Send",
+
+  "farmerPortal": "Farmer Portal",
+  "mySoilTests": "My Soil Tests",
+  "trackRequestsAndReports": "Track your soil test requests and download reports",
+  "dashboardSubtitle": "Track your requests, chat with experts, and download reports.",
+  "bookNewTest": "Book New Test",
+  "totalRequests": "Total Requests",
+  "reportReady": "Reports Ready",
+  "completed": "Completed",
+  "inProgress": "In Progress",
+  "testRequests": "Test Requests",
+  "bookings": "bookings",
+  "booking": "booking",
+  "loadingYourSoilTests": "Loading your soil tests...",
+  "allBookings": "All Bookings",
+  "pending": "Pending",
+  "inProgressFilter": "In Progress",
+  "noSoilTests": "No soil tests found",
+  "bookYourFirstSoilTest": "Book your first soil test to get started.",
+  "bookFirstTest": "Book Your First Test",
+  "noBookingsAtThisTime": "No {{status}} bookings at this time.",
+  "less": "Less",
+  "details": "Details",
+  "assignedExpert": "Assigned Expert",
+  "callExpert": "Call Expert",
+  "noExpertAssigned": "No expert assigned yet. We will notify you once an expert accepts your request.",
+  "fieldName": "Field Name",
+  "fieldSize": "Field Size",
+  "cropType": "Crop Type",
+  "phone": "Phone",
+  "district": "District",
+  "province": "Province",
+  "timeSlot": "Time Slot",
+  "payment": "Payment",
+  "notes": "Notes",
+  "soilAnalysisResults": "Soil Analysis Results",
+  "phLevel": "pH Level",
+  "nitrogen": "Nitrogen",
+  "phosphorus": "Phosphorus",
+  "potassium": "Potassium",
+  "organicMatter": "Organic Matter",
+  "fertilizerRecommendation": "Fertilizer Recommendation",
+  "cashOnCollection": "Cash on collection",
+  "downloadSoilReport": "Download Soil Report",
+  "downloading": "Downloading...",
+  "reportNotUploaded": "Report not uploaded yet",
+  "bookingCancelled": "This booking has been cancelled.",
+  "cashOnDelivery": "Cash on Delivery",
+
+  "status.pending": "Pending Assignment",
+  "status.pending.desc": "Your request has been received. We are finding the nearest available soil expert for your location.",
+  "status.assigned": "Expert Assigned",
+  "status.assigned.desc": "An expert has been assigned to your booking and will confirm shortly.",
+  "status.accepted": "Confirmed",
+  "status.accepted.desc": "Your expert has confirmed the appointment and will visit your field on the scheduled date.",
+  "status.collected": "Sample Collected",
+  "status.collected.desc": "Soil sample has been collected from your field. Lab analysis is now underway.",
+  "status.completed": "Completed",
+  "status.completed.desc": "Soil test is complete. Your report is ready. Download it below.",
+  "status.cancelled": "Cancelled",
+  "status.cancelled.desc": "This booking has been cancelled.",
+
+  "step.pending": "Requested",
+  "step.assigned": "Assigned",
+  "step.accepted": "Confirmed",
+  "step.collected": "Collected",
+  "step.completed": "Completed",
+
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "No notifications yet",
+    "markAllRead": "Mark all read",
+    "viewAdminDashboard": "View Admin Dashboard →",
+    "viewDashboard": "View Dashboard →",
+    "viewMyBookings": "View My Bookings →",
+    "bookingAssigned": {
+      "title": "New Booking Assignment 📋",
+      "message": "New booking from {{farmerName}} for {{fieldName}} at {{municipality}} ward {{ward}}. Collection date: {{nepaliDate}}"
+    },
+    "bookingAccepted": {
+      "title": "Booking Accepted ✅",
+      "message": "Expert {{expertName}} has accepted your booking. They will collect the sample on the scheduled date."
+    },
+    "bookingRejected": {
+      "title": "Booking Status Update ⏳",
+      "titleWithExpert": "Expert Changed 🔄",
+      "message": "We are looking for an available expert to handle your booking. You will be notified shortly.",
+      "messageWithExpert": "We found another expert to handle your booking. {{expertName}} from {{municipality}} will collect your sample."
+    },
+    "bookingReassigned": {
+      "title": "Booking Re-assigned 📋",
+      "message": "New booking from {{farmerName}} for {{fieldName}}. Collection date: {{nepaliDate}}"
+    },
+    "sampleCollected": {
+      "title": "Sample Collected 🧪",
+      "message": "Expert {{expertName}} has collected your soil sample. The testing process will now begin."
+    },
+    "reportUploaded": {
+      "title": "Report Uploaded 📊",
+      "message": "Expert {{expertName}} has uploaded the soil test report for your {{fieldName}} field. The results are ready for review."
+    },
+    "bookingCompleted": {
+      "title": "Booking Completed ✨",
+      "message": "Your soil testing booking is complete! Expert {{expertName}} has finalized the report. You can now download the complete results."
+    }
+  },
+
+  "chat": {
+    "title": "Chat",
+    "conversations": "Conversations",
+    "noConversations": "No active conversations yet",
+    "startChatAfterAccept": "Chat will be available once the expert accepts your booking",
+    "messagePlaceholder": "Type your message...",
+    "send": "Send",
+    "sending": "Sending...",
+    "you": "You",
+    "expert": "Expert",
+    "farmer": "Farmer",
+    "attachFile": "Attach File",
+    "loading": "Loading messages...",
+    "errorLoadingChat": "Failed to load chat",
+    "errorSendingMessage": "Failed to send message",
+    "messageNotAllowed": "Messages are only allowed after expert accepts the booking",
+    "emptyMessage": "Message cannot be empty",
+    "typingIndicator": "typing...",
+    "chatWithExpert": "Chat with {{expertName}}",
+    "chatWithFarmer": "Chat with {{farmerName}}",
+    "lastMessageTime": "Last message",
+    "booking": "Booking",
+    "field": "Field",
+    "status": "Status"
+  }
 }

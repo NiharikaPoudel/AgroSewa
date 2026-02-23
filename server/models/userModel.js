@@ -38,18 +38,73 @@ const userSchema = new mongoose.Schema(
       type: String,
       sparse: true,
     },
+
+    // Google / social profile picture URL (unchanged)
     picture: {
       type: String,
     },
-    // Expert fields
+
+    // ── Expert profile photo (uploaded file, stored in uploads/certificates) ──
+    profilePhoto: {
+      type: String,
+      default: null,
+    },
+
+    // ── Shared: contact number for all roles ──
+    contactNumber: {
+      type: String,
+      default: "",
+    },
+
+    // ── Expert fields ──
     skills: {
       type: [String],
       default: [],
     },
+
+    // Years of professional experience
+    experienceYears: {
+      type: Number,
+      default: null,
+    },
+
+    // Lab / Office name
+    labName: {
+      type: String,
+      default: "",
+    },
+
+    // Full constructed address string (e.g. "Green Soil Lab, Kathmandu Metropolitan, Ward 5")
     labAddress: {
       type: String,
       default: "",
     },
+
+    // Municipality component of lab address
+    labMunicipality: {
+      type: String,
+      default: "",
+    },
+
+    // Ward component of lab address
+    labWard: {
+      type: String,
+      default: "",
+    },
+
+    // Lab certificate (replaces educationCertificate for experts)
+    labCertificate: {
+      type: String,
+      default: null,
+    },
+
+    // Citizenship / ID proof
+    idProof: {
+      type: String,
+      default: null,
+    },
+
+    // ── Kept for backward-compatibility (existing data / other flows) ──
     educationCertificate: {
       type: String,
       default: null,
@@ -62,10 +117,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    idProof: {
-      type: String,
-      default: null,
-    },
+
     // OTP fields
     verifyOtp: {
       type: String,

@@ -14,7 +14,11 @@ import { expertUpload } from "../config/multer.js";
 
 const authRouter = express.Router();
 
+// ── REGISTER
+// expertUpload now accepts new field names (labCertificate, idProof)
+// plus old field names kept for backward-compat in case anything still sends them
 authRouter.post("/register",        expertUpload, register);
+
 authRouter.post("/login",           login);
 authRouter.post("/logout",          logout);
 

@@ -8,14 +8,19 @@ import jwt          from "jsonwebtoken";
 import path         from "path";
 import { fileURLToPath } from "url";
 
-import connectDB    from "./config/mongodb.js";
-import authRouter   from "./routes/authRoutes.js";
-import userRouter   from "./routes/userRoutes.js";
-import chatRouter   from "./routes/chatRoutes.js";
-import weatherRouter from "./routes/weatherRoutes.js";
-import adminRouter  from "./routes/adminRoutes.js";
-import User         from "./models/usermodel.js";
+import connectDB          from "./config/mongodb.js";
+import authRouter         from "./routes/authRoutes.js";
+import userRouter         from "./routes/userRoutes.js";
+import chatRouter         from "./routes/chatRoutes.js";
+import weatherRouter      from "./routes/weatherRoutes.js";
+import adminRouter        from "./routes/adminRoutes.js";
+import bookingRoutes      from "./routes/bookingRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import userChatRoutes     from "./routes/userChatRoutes.js";
+import User               from "./models/usermodel.js";
 import "./auth/google.js";
+import chatRouters from "./routes/chatRouter.js";
+
 
 const app  = express();
 const port = process.env.PORT || 5000;
@@ -62,12 +67,15 @@ app.use(
 /* ══════════════════════════════
    API ROUTES
 ══════════════════════════════ */
-app.use("/api/auth",    authRouter);
-app.use("/api/user",    userRouter);
-app.use("/api/chat",    chatRouter);
-app.use("/api/weather", weatherRouter);
-app.use("/api/admin",   adminRouter);
-
+app.use("/api/auth",          authRouter);
+app.use("/api/user",          userRouter);
+app.use("/api/chat",          chatRouter);
+app.use("/api/weather",       weatherRouter);
+app.use("/api/admin",         adminRouter);
+app.use("/api/bookings",      bookingRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/user-chat",     userChatRoutes);
+app.use("/api/chat", chatRouters); // ✅ add this line to register chatRouter , i am confused 
 /* ══════════════════════════════
    HEALTH CHECK
 ══════════════════════════════ */
@@ -137,7 +145,6 @@ app.get(
 app.use((err, req, res, next) => {
   console.error("🔥 SERVER ERROR:", err);
 
-  // Multer file size error
   if (err.code === "LIMIT_FILE_SIZE") {
     return res.status(400).json({
       success: false,

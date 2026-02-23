@@ -11,7 +11,7 @@ const userRouter = express.Router();
 userRouter.get("/data", userAuth, getUserData);
 
 /* ============================= */
-/* GET USER PROFILE */
+/* GET USER PROFILE              */
 /* ============================= */
 userRouter.get("/profile", userAuth, async (req, res) => {
   try {
@@ -37,11 +37,12 @@ userRouter.get("/profile", userAuth, async (req, res) => {
 });
 
 /* ============================= */
-/* UPDATE USER PROFILE */
+/* UPDATE USER PROFILE           */
 /* ============================= */
 userRouter.put("/profile", userAuth, async (req, res) => {
   try {
-    const { name, picture } = req.body;
+    // ── contactNumber is now accepted in profile updates too ──
+    const { name, picture, contactNumber } = req.body;
 
     const user = await User.findById(req.user.id);
 
@@ -52,8 +53,9 @@ userRouter.put("/profile", userAuth, async (req, res) => {
       });
     }
 
-    if (name) user.name = name;
-    if (picture) user.picture = picture;
+    if (name)          user.name          = name;
+    if (picture)       user.picture       = picture;
+    if (contactNumber !== undefined) user.contactNumber = contactNumber;
 
     await user.save();
 

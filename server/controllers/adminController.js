@@ -1,10 +1,10 @@
 import userModel         from "../models/usermodel.js";
 import ExpertApplication from "../models/ExpertApplication.js";
 import transporter       from "../config/nodemailer.js";
+import Notification      from "../models/Notification.js";
 
 /* ─────────────────────────────
-   GET PENDING EXPERTS (shorthand)
-   Called by AdminDashboard.jsx → /api/admin/pending-experts
+   GET PENDING EXPERTS
 ───────────────────────────── */
 export const getPendingExperts = async (req, res) => {
   try {
@@ -20,10 +20,8 @@ export const getPendingExperts = async (req, res) => {
   }
 };
 
-
 /* ─────────────────────────────
    GET ALL EXPERT APPLICATIONS
-   ?status=pending|approved|rejected
 ───────────────────────────── */
 export const getExpertApplications = async (req, res) => {
   try {
@@ -43,7 +41,6 @@ export const getExpertApplications = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    GET SINGLE APPLICATION
@@ -67,7 +64,6 @@ export const getApplicationById = async (req, res) => {
   }
 };
 
-
 /* ─────────────────────────────
    APPROVE EXPERT
 ───────────────────────────── */
@@ -88,9 +84,22 @@ export const approveExpert = async (req, res) => {
     application.reviewedAt = new Date();
     await application.save();
 
+    // Promote user + sync all expert fields from the application
     const user = await userModel.findByIdAndUpdate(
       application.user,
-      { expertStatus: "approved" },
+      {
+        role:            "expert",
+        expertStatus:    "approved",
+        // Sync new expert profile fields
+        profilePhoto:    application.profilePhoto    || null,
+        experienceYears: application.experienceYears ?? null,
+        labName:         application.labName         || "",
+        labAddress:      application.labAddress      || "",
+        labMunicipality: application.labMunicipality || "",
+        labWard:         application.labWard         || "",
+        labCertificate:  application.labCertificate  || null,
+        idProof:         application.idProof         || null,
+      },
       { new: true }
     );
 
@@ -98,41 +107,56 @@ export const approveExpert = async (req, res) => {
       return res.json({ success: false, message: "User not found." });
     }
 
-    // Email the expert — approved
+    // 🔔 In-app notification for the approved applicant (unchanged)
     try {
-      await transporter.sendMail({
-        from:    process.env.SENDER_EMAIL,
-        to:      application.email,
-        subject: "🎉 AgroSewa — Your Expert Application is Approved!",
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;
-            padding:32px;border:1px solid #e5e7eb;border-radius:10px;">
-            <h2 style="color:#2d8a4f;">Congratulations! You're Approved 🎉</h2>
-            <p style="color:#374151;">Hi <strong>${application.name}</strong>,</p>
-            <p style="color:#374151;">
-              Your expert application for <strong>AgroSewa</strong> has been
-              <span style="color:#2d8a4f;font-weight:700;">approved</span>
-              by our admin team.
-            </p>
-            <p style="color:#374151;">
-              You can now login to your expert account and start offering
-              your services to farmers.
-            </p>
-            <div style="text-align:center;margin:28px 0;">
-              <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}/login"
-                style="display:inline-block;padding:14px 32px;
-                background:#2d8a4f;color:white;border-radius:8px;
-                text-decoration:none;font-weight:600;font-size:15px;">
-                Login to Your Account
-              </a>
-            </div>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;"/>
-            <p style="color:#9ca3af;font-size:12px;text-align:center;">
-              AgroSewa — Smart Soil Testing &amp; Booking System
-            </p>
-          </div>
-        `,
+      await Notification.create({
+        recipient: application.user,
+        title:     "Application Approved 🎉",
+        message:   "Congratulations! Your expert application has been approved. You can now login as an expert.",
+        isRead:    false,
       });
+    } catch (notifErr) {
+      console.error("Approval notification failed:", notifErr.message);
+    }
+
+    // 📧 Email the expert — approved (unchanged)
+    try {
+      const emailTo = (application.email || "").trim();
+      if (emailTo) {
+        await transporter.sendMail({
+          from:    `"AgroSewa System" <${process.env.SENDER_EMAIL}>`,
+          to:      emailTo,
+          subject: "🎉 AgroSewa — Your Expert Application is Approved!",
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;
+              padding:32px;border:1px solid #e5e7eb;border-radius:10px;">
+              <h2 style="color:#2d8a4f;">Congratulations! You're Approved 🎉</h2>
+              <p style="color:#374151;">Hi <strong>${application.name}</strong>,</p>
+              <p style="color:#374151;">
+                Your expert application for <strong>AgroSewa</strong> has been
+                <span style="color:#2d8a4f;font-weight:700;">approved</span>
+                by our admin team.
+              </p>
+              <p style="color:#374151;">
+                You can now login to your expert account and start offering
+                your services to farmers.
+              </p>
+              <div style="text-align:center;margin:28px 0;">
+                <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}/login"
+                  style="display:inline-block;padding:14px 32px;
+                  background:#2d8a4f;color:white;border-radius:8px;
+                  text-decoration:none;font-weight:600;font-size:15px;">
+                  Login to Your Account
+                </a>
+              </div>
+              <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;"/>
+              <p style="color:#9ca3af;font-size:12px;text-align:center;">
+                AgroSewa — Smart Soil Testing &amp; Booking System
+              </p>
+            </div>
+          `,
+        });
+      }
     } catch (mailErr) {
       console.error("Approval email failed:", mailErr.message);
     }
@@ -147,7 +171,6 @@ export const approveExpert = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    REJECT EXPERT
@@ -175,37 +198,54 @@ export const rejectExpert = async (req, res) => {
       expertStatus: "rejected",
     });
 
-    // Email the expert — rejected
+    // 🔔 In-app notification for the rejected applicant (unchanged)
     try {
-      await transporter.sendMail({
-        from:    process.env.SENDER_EMAIL,
-        to:      application.email,
-        subject: "AgroSewa — Expert Application Update",
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;
-            padding:32px;border:1px solid #e5e7eb;border-radius:10px;">
-            <h2 style="color:#dc2626;">Application Not Approved</h2>
-            <p style="color:#374151;">Hi <strong>${application.name}</strong>,</p>
-            <p style="color:#374151;">
-              Thank you for applying to be an expert on <strong>AgroSewa</strong>.
-              After reviewing your application, we are unable to approve it at this time.
-            </p>
-            ${reason ? `
-            <div style="padding:16px;background:#fef2f2;border:1px solid #fecaca;
-              border-radius:8px;margin:16px 0;">
-              <p style="margin:0;color:#dc2626;font-size:13px;font-weight:600;">Reason:</p>
-              <p style="margin:8px 0 0;color:#374151;font-size:13px;">${reason}</p>
-            </div>` : ""}
-            <p style="color:#374151;">
-              If you believe this is an error, please contact our support team.
-            </p>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;"/>
-            <p style="color:#9ca3af;font-size:12px;text-align:center;">
-              AgroSewa — Smart Soil Testing &amp; Booking System
-            </p>
-          </div>
-        `,
+      await Notification.create({
+        recipient: application.user,
+        title:     "Application Update",
+        message:   reason
+          ? `Your expert application was not approved. Reason: ${reason}`
+          : "Your expert application has been reviewed and was not approved at this time.",
+        isRead:    false,
       });
+    } catch (notifErr) {
+      console.error("Rejection notification failed:", notifErr.message);
+    }
+
+    // 📧 Email the expert — rejected (unchanged)
+    try {
+      const emailTo = (application.email || "").trim();
+      if (emailTo) {
+        await transporter.sendMail({
+          from:    `"AgroSewa System" <${process.env.SENDER_EMAIL}>`,
+          to:      emailTo,
+          subject: "AgroSewa — Expert Application Update",
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;
+              padding:32px;border:1px solid #e5e7eb;border-radius:10px;">
+              <h2 style="color:#dc2626;">Application Not Approved</h2>
+              <p style="color:#374151;">Hi <strong>${application.name}</strong>,</p>
+              <p style="color:#374151;">
+                Thank you for applying to be an expert on <strong>AgroSewa</strong>.
+                After reviewing your application, we are unable to approve it at this time.
+              </p>
+              ${reason ? `
+              <div style="padding:16px;background:#fef2f2;border:1px solid #fecaca;
+                border-radius:8px;margin:16px 0;">
+                <p style="margin:0;color:#dc2626;font-size:13px;font-weight:600;">Reason:</p>
+                <p style="margin:8px 0 0;color:#374151;font-size:13px;">${reason}</p>
+              </div>` : ""}
+              <p style="color:#374151;">
+                If you believe this is an error, please contact our support team.
+              </p>
+              <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;"/>
+              <p style="color:#9ca3af;font-size:12px;text-align:center;">
+                AgroSewa — Smart Soil Testing &amp; Booking System
+              </p>
+            </div>
+          `,
+        });
+      }
     } catch (mailErr) {
       console.error("Rejection email failed:", mailErr.message);
     }
@@ -220,7 +260,6 @@ export const rejectExpert = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    GET ALL USERS
@@ -238,7 +277,6 @@ export const getAllUsers = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    GET DASHBOARD STATS

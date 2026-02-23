@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
+import userModel from "../models/userModel.js";
 
-const adminAuth = (req, res, next) => {
+// ─── ADMIN AUTH MIDDLEWARE ───────────────────────
+// Used by adminRoutes — checks token AND role === "admin"
+const adminAuth = async (req, res, next) => {
   try {
     let token = null;
 
@@ -16,7 +19,7 @@ const adminAuth = (req, res, next) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Not authorized.",
+        message: "Not authorized. Please login.",
       });
     }
 
@@ -29,20 +32,25 @@ const adminAuth = (req, res, next) => {
       });
     }
 
-    if (decoded.role !== "admin") {
+    // ✅ Check admin role from DB (not just token)
+    const user = await userModel.findById(decoded.id).select("-password");
+    if (!user || user.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: "Admin access only.",
+        message: "Access denied. Admins only.",
       });
     }
 
-    req.user = { id: decoded.id, role: decoded.role };
-    next();
+    req.user = {
+      id:   String(user._id),
+      role: user.role,
+    };
 
+    next();
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Token expired or invalid.",
+      message: "Token expired or invalid. Please login again.",
     });
   }
 };

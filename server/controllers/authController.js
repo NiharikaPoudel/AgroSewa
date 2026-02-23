@@ -3,6 +3,7 @@ import jwt         from "jsonwebtoken";
 import userModel   from "../models/usermodel.js";
 import ExpertApplication from "../models/ExpertApplication.js";
 import transporter from "../config/nodemailer.js";
+import Notification from "../models/Notification.js";
 
 /* ─────────────────────────────
    HELPERS
@@ -59,8 +60,19 @@ const otpEmailHtml = (name, otp, title, note, expiry = "24 hours") =>
 ───────────────────────────── */
 export const register = async (req, res) => {
   try {
-    const { name, email, password, role, labAddress, contactNumber } =
-      req.body || {};
+    const {
+      name,
+      email,
+      password,
+      role,
+      contactNumber,
+      // ── NEW expert fields ──
+      experienceYears,
+      labName,
+      labAddress,
+      labMunicipality,
+      labWard,
+    } = req.body || {};
 
     if (!name || !email || !password || !role) {
       return res.json({
@@ -80,14 +92,15 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const userData = {
-      name:         name.trim(),
-      email:        email.toLowerCase().trim(),
-      password:     hashedPassword,
+      name:          name.trim(),
+      email:         email.toLowerCase().trim(),
+      password:      hashedPassword,
       role,
-      authProvider: "local",
+      authProvider:  "local",
+      contactNumber: contactNumber ? contactNumber.trim() : "",
     };
 
-    // ── FARMER ──
+    // ── FARMER (completely unchanged) ────────────────────────────────────────
     if (role === "farmer") {
       const otp = generateOtp();
       userData.verifyOtp         = otp;
@@ -98,7 +111,7 @@ export const register = async (req, res) => {
 
       try {
         await transporter.sendMail({
-          from:    process.env.SENDER_EMAIL,
+          from:    `"AgroSewa System" <${process.env.SENDER_EMAIL}>`,
           to:      newUser.email,
           subject: "AgroSewa — Verify Your Email Address",
           html:    otpEmailHtml(
@@ -119,80 +132,262 @@ export const register = async (req, res) => {
       });
     }
 
-    // ── EXPERT ──
+    // ── EXPERT ──────────────────────────────────────────────────────────────
     if (role === "expert") {
-      if (!req.files?.educationCertificate || !req.files?.idProof) {
+
+      // Validate required documents
+      if (!req.files?.labCertificate && !req.files?.educationCertificate) {
         return res.json({
           success: false,
-          message: "Education certificate and ID proof are required.",
+          message: "Lab certificate is required.",
         });
       }
-
+      if (!req.files?.idProof) {
+        return res.json({
+          success: false,
+          message: "ID proof / Citizenship is required.",
+        });
+      }
+      if (!req.files?.profilePhoto) {
+        return res.json({
+          success: false,
+          message: "Profile photo is required.",
+        });
+      }
       if (!contactNumber || !contactNumber.trim()) {
         return res.json({
           success: false,
           message: "Contact number is required.",
         });
       }
+      if (!labName || !labName.trim()) {
+        return res.json({
+          success: false,
+          message: "Lab name is required.",
+        });
+      }
+      if (!labMunicipality || !labWard) {
+        return res.json({
+          success: false,
+          message: "Lab municipality and ward are required.",
+        });
+      }
 
-      userData.expertStatus      = "pending";
-      userData.isAccountVerified = true;
+      // Resolve file paths
+      const profilePhotoFile =
+        req.files?.profilePhoto?.[0]?.filename || null;
+
+      const labCertificateFile =
+        req.files?.labCertificate?.[0]?.filename ||
+        req.files?.educationCertificate?.[0]?.filename ||
+        null;
+
+      const idProofFile = req.files?.idProof?.[0]?.filename || null;
+
+      // Build full address string server-side as source of truth
+      const builtLabAddress = [
+        labName?.trim(),
+        labMunicipality,
+        labWard ? `Ward ${labWard}` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      // Merge new expert fields into userData before saving
+      Object.assign(userData, {
+        expertStatus:      "pending",
+        isAccountVerified: true,
+        profilePhoto:      profilePhotoFile,
+        experienceYears:   experienceYears ? Number(experienceYears) : null,
+        labName:           labName?.trim()         || "",
+        labAddress:        builtLabAddress,
+        labMunicipality:   labMunicipality          || "",
+        labWard:           labWard                  || "",
+        labCertificate:    labCertificateFile,
+        idProof:           idProofFile,
+      });
 
       const newUser = await userModel.create(userData);
 
+      // Create application record
       await ExpertApplication.create({
-        user:                  newUser._id,
-        name:                  name.trim(),
-        email:                 email.toLowerCase().trim(),
-        contactNumber:         contactNumber.trim(),
-        labAddress:            labAddress || "",
-        educationCertificate:  req.files?.educationCertificate?.[0]?.filename  || null,
+        user:            newUser._id,
+        name:            name.trim(),
+        email:           email.toLowerCase().trim(),
+        contactNumber:   contactNumber.trim(),
+        experienceYears: experienceYears ? Number(experienceYears) : null,
+        labName:         labName?.trim()   || "",
+        labAddress:      builtLabAddress,
+        labMunicipality: labMunicipality   || "",
+        labWard:         labWard           || "",
+        profilePhoto:    profilePhotoFile,
+        labCertificate:  labCertificateFile,
+        idProof:         idProofFile,
+        // backward-compat fields
+        educationCertificate:  labCertificateFile,
         governmentCertificate: req.files?.governmentCertificate?.[0]?.filename || null,
         experienceCertificate: req.files?.experienceCertificate?.[0]?.filename || null,
-        idProof:               req.files?.idProof?.[0]?.filename               || null,
-        status:                "pending",
+        status: "pending",
       });
 
+      /* ══════════════════════════════════════════
+         🔔 IN-APP NOTIFICATION → ALL ADMINS (unchanged)
+      ══════════════════════════════════════════ */
       try {
-        await transporter.sendMail({
-          from:    process.env.SENDER_EMAIL,
-          to:      process.env.ADMIN_EMAIL,
-          subject: "AgroSewa — New Expert Application Received",
-          html: baseEmailWrapper(`
-            <h2 style="margin:0 0 8px;color:#1a5c35;font-size:18px;font-weight:600;">New Expert Application</h2>
-            <p style="color:#475569;font-size:14px;margin:0 0 24px;">
-              A new expert application has been submitted and is awaiting your review.
-            </p>
-            <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px;">
-              <tbody>
-                <tr style="border-bottom:1px solid #e2e8f0;">
-                  <td style="padding:12px 8px;color:#64748b;font-weight:500;width:40%;">Full Name</td>
-                  <td style="padding:12px 8px;color:#1e293b;font-weight:600;">${name}</td>
-                </tr>
-                <tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc;">
-                  <td style="padding:12px 8px;color:#64748b;font-weight:500;">Email Address</td>
-                  <td style="padding:12px 8px;color:#1e293b;font-weight:600;">${email}</td>
-                </tr>
-                <tr style="border-bottom:1px solid #e2e8f0;">
-                  <td style="padding:12px 8px;color:#64748b;font-weight:500;">Contact Number</td>
-                  <td style="padding:12px 8px;color:#1e293b;font-weight:600;">${contactNumber || "—"}</td>
-                </tr>
-                <tr style="background:#f8fafc;">
-                  <td style="padding:12px 8px;color:#64748b;font-weight:500;">Lab Address</td>
-                  <td style="padding:12px 8px;color:#1e293b;font-weight:600;">${labAddress || "—"}</td>
-                </tr>
-              </tbody>
-            </table>
-            <p style="color:#475569;font-size:13px;margin:0 0 20px;">
-              Please log in to the Admin Dashboard to review the submitted documents and approve or reject this application.
-            </p>
-            <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}/admin-dashboard"
-              style="display:inline-block;padding:12px 28px;background:#1a5c35;color:#ffffff;
-              border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;letter-spacing:0.3px;">
-              Go to Admin Dashboard
-            </a>
-          `),
-        });
+        const admins = await userModel.find({ role: "admin" });
+        console.log(`Found ${admins.length} admin(s) — creating in-app notifications.`);
+
+        for (const admin of admins) {
+          await Notification.create({
+            recipient: admin._id,
+            title:     "New Expert Application",
+            message:   `${name.trim()} has submitted an expert application and is awaiting your review.`,
+            isRead:    false,
+          });
+          console.log(`✅ In-app notification created for admin: ${admin.email}`);
+        }
+
+        if (admins.length === 0) {
+          console.warn("⚠ No admin users found in DB — no in-app notifications created.");
+        }
+      } catch (notifErr) {
+        console.error("In-app notification error:", notifErr.message);
+      }
+
+      /* ══════════════════════════════════════════
+         📧 PROFESSIONAL EMAIL → ADMIN (unchanged)
+      ══════════════════════════════════════════ */
+      try {
+        const adminEmail = (process.env.ADMIN_EMAIL || "").trim();
+
+        if (adminEmail) {
+          const submittedAt = new Date().toLocaleString("en-US", {
+            weekday: "long",
+            year:    "numeric",
+            month:   "long",
+            day:     "numeric",
+            hour:    "2-digit",
+            minute:  "2-digit",
+          });
+
+          await transporter.sendMail({
+            from:    `"AgroSewa System" <${process.env.SENDER_EMAIL}>`,
+            to:      adminEmail,
+            subject: "🔔 New Expert Application — Action Required",
+            html: baseEmailWrapper(`
+              <h2 style="margin:0 0 4px;color:#1a5c35;font-size:20px;font-weight:700;">
+                New Expert Application Received
+              </h2>
+              <p style="margin:0 0 24px;color:#94a3b8;font-size:12px;letter-spacing:0.3px;">
+                Submitted on ${submittedAt}
+              </p>
+
+              <p style="color:#475569;font-size:14px;margin:0 0 24px;line-height:1.7;">
+                A new applicant has registered on <strong style="color:#1e293b;">AgroSewa</strong>
+                and is requesting expert status. Please review their details below and take
+                action from the Admin Dashboard.
+              </p>
+
+              <!-- ── Applicant Details ── -->
+              <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                <thead>
+                  <tr style="background:#1a5c35;">
+                    <td colspan="2" style="padding:13px 16px;color:#ffffff;font-weight:700;font-size:13px;letter-spacing:0.4px;">
+                      📋 &nbsp;Applicant Details
+                    </td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:13px 16px;color:#64748b;font-weight:600;width:38%;background:#f8fafc;">Full Name</td>
+                    <td style="padding:13px 16px;color:#1e293b;font-weight:700;">${name.trim()}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:13px 16px;color:#64748b;font-weight:600;background:#f8fafc;">Email Address</td>
+                    <td style="padding:13px 16px;color:#1e293b;">${email.toLowerCase().trim()}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:13px 16px;color:#64748b;font-weight:600;background:#f8fafc;">Contact Number</td>
+                    <td style="padding:13px 16px;color:#1e293b;">${contactNumber ? contactNumber.trim() : "—"}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:13px 16px;color:#64748b;font-weight:600;background:#f8fafc;">Years of Experience</td>
+                    <td style="padding:13px 16px;color:#1e293b;">${experienceYears ? `${experienceYears} years` : "—"}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:13px 16px;color:#64748b;font-weight:600;background:#f8fafc;">Lab / Office Name</td>
+                    <td style="padding:13px 16px;color:#1e293b;">${labName ? labName.trim() : "—"}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:13px 16px;color:#64748b;font-weight:600;background:#f8fafc;">Lab Address</td>
+                    <td style="padding:13px 16px;color:#1e293b;">${builtLabAddress || "—"}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- ── Documents Submitted ── -->
+              <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                <thead>
+                  <tr style="background:#0f4f2c;">
+                    <td colspan="2" style="padding:13px 16px;color:#ffffff;font-weight:700;font-size:13px;letter-spacing:0.4px;">
+                      📁 &nbsp;Documents Submitted
+                    </td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:13px 16px;color:#64748b;font-weight:600;width:38%;background:#f8fafc;">Profile Photo</td>
+                    <td style="padding:13px 16px;">
+                      ${profilePhotoFile
+                        ? `<span style="color:#15803d;font-weight:700;">✔ Uploaded</span>`
+                        : `<span style="color:#dc2626;font-weight:600;">✘ Not provided</span>`}
+                    </td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:13px 16px;color:#64748b;font-weight:600;background:#f8fafc;">Lab Certificate</td>
+                    <td style="padding:13px 16px;">
+                      ${labCertificateFile
+                        ? `<span style="color:#15803d;font-weight:700;">✔ Uploaded</span>`
+                        : `<span style="color:#dc2626;font-weight:600;">✘ Not provided</span>`}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:13px 16px;color:#64748b;font-weight:600;background:#f8fafc;">Citizenship / ID Proof</td>
+                    <td style="padding:13px 16px;">
+                      ${idProofFile
+                        ? `<span style="color:#15803d;font-weight:700;">✔ Uploaded</span>`
+                        : `<span style="color:#dc2626;font-weight:600;">✘ Not provided</span>`}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- ── Action Required Banner ── -->
+              <div style="background:#fefce8;border:1px solid #fde68a;border-radius:7px;padding:15px 18px;margin-bottom:28px;">
+                <p style="margin:0;color:#92400e;font-size:13px;line-height:1.7;">
+                  <strong>⚠ Action Required:</strong> This application is currently
+                  <strong>pending review</strong>. Please log in to the Admin Dashboard
+                  to approve or reject it. The applicant will be notified by email
+                  automatically once a decision is made.
+                </p>
+              </div>
+
+              <!-- ── CTA Button ── -->
+              <div style="text-align:center;">
+                <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}/admin-dashboard"
+                  style="display:inline-block;padding:14px 40px;background:#1a5c35;
+                  color:#ffffff;border-radius:7px;text-decoration:none;
+                  font-weight:700;font-size:14px;letter-spacing:0.5px;">
+                  Review Application &rarr;
+                </a>
+              </div>
+            `),
+          });
+
+          console.log("✅ Admin email sent to:", adminEmail);
+        } else {
+          console.warn("⚠ ADMIN_EMAIL not set or empty in .env — skipping email.");
+        }
       } catch (mailErr) {
         console.error("Admin notification mail failed:", mailErr.message);
       }
@@ -211,7 +406,6 @@ export const register = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    VERIFY EMAIL (OTP)
@@ -292,7 +486,6 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-
 /* ─────────────────────────────
    RESEND VERIFY OTP
 ───────────────────────────── */
@@ -321,7 +514,7 @@ export const sendVerifyOtp = async (req, res) => {
 
     try {
       await transporter.sendMail({
-        from:    process.env.SENDER_EMAIL,
+        from:    `"AgroSewa System" <${process.env.SENDER_EMAIL}>`,
         to:      user.email,
         subject: "AgroSewa — New Verification OTP",
         html:    otpEmailHtml(
@@ -342,7 +535,6 @@ export const sendVerifyOtp = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    LOGIN
@@ -415,6 +607,7 @@ export const login = async (req, res) => {
         name:              user.name,
         email:             user.email,
         role:              user.role,
+        contactNumber:     user.contactNumber,
         isAccountVerified: user.isAccountVerified,
       },
     });
@@ -424,7 +617,6 @@ export const login = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    LOGOUT
@@ -441,7 +633,6 @@ export const logout = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    SEND RESET OTP
@@ -468,7 +659,7 @@ export const sendResetOtp = async (req, res) => {
     await user.save();
 
     await transporter.sendMail({
-      from:    process.env.SENDER_EMAIL,
+      from:    `"AgroSewa System" <${process.env.SENDER_EMAIL}>`,
       to:      user.email,
       subject: "AgroSewa — Password Reset Request",
       html:    otpEmailHtml(
@@ -487,7 +678,6 @@ export const sendResetOtp = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    RESET PASSWORD
@@ -528,7 +718,6 @@ export const resetPassword = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
-
 
 /* ─────────────────────────────
    IS AUTHENTICATED

@@ -1,6 +1,6 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import path   from "path";
+import fs     from "fs";
 
 // Ensure upload folder exists
 const uploadDir = "uploads/certificates";
@@ -35,9 +35,15 @@ export const upload = multer({
 });
 
 // Fields for expert application
+// NEW: labCertificate, idProof, profilePhoto
+// OLD: educationCertificate, governmentCertificate, experienceCertificate (kept for backward-compat)
 export const expertUpload = upload.fields([
+  { name: "profilePhoto",          maxCount: 1 },
+  { name: "labCertificate",        maxCount: 1 },
+  { name: "idProof",               maxCount: 1 },
   { name: "educationCertificate",  maxCount: 1 },
   { name: "governmentCertificate", maxCount: 1 },
   { name: "experienceCertificate", maxCount: 1 },
-  { name: "idProof",               maxCount: 1 },
 ]);
+
+export default upload;
